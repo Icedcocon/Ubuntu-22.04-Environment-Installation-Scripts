@@ -1,6 +1,16 @@
 #!/bin/bash
 cd $(dirname $0)
 
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 [1|2|3|4|ALL]"
+    echo "1: Install Anaconda"
+    echo "2: Install Docker"
+    echo "3: Install Kubeadm"
+    echo "4: Init Kubernetes"
+    echo "ALL: Install all"
+    exit 0
+fi
+
 # 配置全局环境变量
 SETP=$1
 CONFIG_FILE="./config/env.cfg"
@@ -56,6 +66,18 @@ if [ ${SETP} == "4" ] || [ ${SETP} == "ALL" ]; then
     LOG_FILE="${LOG_PATH}/step-4-$(date +%Y%m%d%H%M%S).log"
     touch ${LOG_FILE}
     exec &> ${LOG_FILE}
+
+    # 检测docker是否安装成功
+    if [ ! -f /usr/bin/docker ]; then
+        echo "docker not found. Please install docker at step 2 first."
+        exit 0
+    fi
+
+    # 检测kubeadm是否安装成功
+    if [ ! -f /usr/bin/kubeadm ]; then
+        echo "kubeadm not found. Please install kubeadm at step 3 first."
+        exit 0
+    fi
 
     # 初始化集群
     bash -x shell/init-kubernetes.sh
